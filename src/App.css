@@ -1,0 +1,94 @@
+body {
+  background-color: #282a36;
+  margin: 0;
+  padding: 0;
+}
+
+.App {
+  text-align: center;
+  margin-top: 50px;
+  color: #f8f8f2;
+}
+
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #282a36;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  color: #ff79c6;
+}
+
+nav p {
+  margin: 0;
+}
+
+nav p:last-child {
+  text-align: right;
+  width: 100%;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.task-item {
+  margin: 10px auto;
+  width: 70%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  color: #f1fa8c;
+}
+
+.task-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  border-radius: 80%;
+  margin-right: 10px;
+}
+
+.completed {
+  text-decoration: line-through;
+}
+
+.remove-button {
+  margin-left: auto;
+  background-color: #ff0000;
+  color: #f8f8f2;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.remove-button:hover {
+  background-color: #ff0000;
+}
+
+div input {
+  height: 20px;
+  background-color: #44475a;
+  color: #f8f8f2;
+}
+
+div button {
+  background-color: #50fa7b;
+  color: #282a36;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+div button:hover {
+  background-color: #00ff00;
+}
+
