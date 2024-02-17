@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { observer } from 'mobx-react';
 import './App.css';
-
-
+import { makeAutoObservable } from 'mobx';
 
 interface Task {
   id: string;
@@ -10,92 +10,118 @@ interface Task {
   createDate: Date;
 }
 
-const App: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTask, setNewTask] = useState<string>('');
+class TaskStore {
+  tasks: Task[] = [];
+  newTask = '';
+  isListLayout = true;
 
-  useEffect(() => {
-    const defaultTask: Task = {
-      id: '1',
-      title: 'Write yourself a task!',
-      completed: false,
-      createDate: new Date(),
-    };
+  constructor() {
+    makeAutoObservable(this);
+  }
 
-    setTasks([defaultTask]);
-  }, []); 
+  handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    this.newTask = event.target.value;
+  }
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTask(event.target.value);
-  };
-
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  handleKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Enter') {
-      addTask();
+      this.addTask();
     }
-  };
+  }
 
-  const addTask = () => {
-    if (newTask.trim() !== '') {
+  addTask() {
+    if (this.newTask.trim() !== '') {
       const newTaskItem: Task = {
         id: String(Date.now()),
-        title: newTask,
+        title: this.newTask,
         completed: false,
         createDate: new Date(),
       };
-
-      setTasks([...tasks, newTaskItem]);
-      setNewTask('');
+      this.tasks.push(newTaskItem);
+      this.newTask = '';
     }
-  };
+  }
 
-  const toggleTask = (taskId: string) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
+  toggleTask(taskId: string) {
+    const task = this.tasks.find((task) => task.id === taskId);
+    if (task) {
+      task.completed = !task.completed;
+    }
+  }
 
-  const removeTask = (taskId: string) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-  };
+  removeTask(taskId: string) {
+    this.tasks = this.tasks.filter((task) => task.id !== taskId);
+  }
 
-  const finishedTasks = tasks.filter((task) => task.completed).length;
-  const percentageCompleted = tasks.length > 0 ? (finishedTasks / tasks.length) * 100 : 0;
+  get finishedTasks() {
+    return this.tasks.filter((task) => task.completed).length;
+  }
 
+  get percentageCompleted() {
+    return this.tasks.length > 0 ? (this.finishedTasks / this.tasks.length) * 100 : 0;
+  }
+
+  toggleLayout() {
+    this.isListLayout = !this.isListLayout;
+  }
+}
+
+const store = new TaskStore();
+
+const App = observer(() => {
   return (
     <div className="App">
       <nav>
-      <p>Almost there: {percentageCompleted.toFixed(2)}% done</p>
+        <p>Almost there: {store.percentageCompleted.toFixed(2)}% done</p>
+        <button onClick={() => store.toggleLayout()}>
+          {store.isListLayout ? 'Switch to Tiles' : 'Switch to List'}
+        </button>
       </nav>
       <div>
         <input
           type="text"
           placeholder="Enter task"
-          value={newTask}
-          onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
+          value={store.newTask}
+          onChange={(event) => store.handleInputChange(event)}
+          onKeyPress={(event) => store.handleKeyPress(event)}
         />
-        <button onClick={addTask}>Add Task</button>
+        <button onClick={() => store.addTask()}>Add Task</button>
       </div>
-      <ul>
-        {tasks.map((task) => (
-          <li key={task.id} className="task-item">
-            <input
-              type="checkbox"
-              checked={task.completed}
-              onChange={() => toggleTask(task.id)}
-            />
-            <span className={task.completed ? 'completed' : ''}>{task.title}</span>
-            <button className="remove-button" onClick={() => removeTask(task.id)}>
-              Remove
-            </button>
-          </li>
-        ))}
-      </ul>
+      {store.isListLayout ? (
+        <ul>
+          {store.tasks.map((task) => (
+            <li key={task.id} className="task-item">
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={() => store.toggleTask(task.id)}
+              />
+              <span className={task.completed ? 'completed' : ''}>{task.title}</span>
+              <button className="remove-button" onClick={() => store.removeTask(task.id)}>
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="tiles-container">
+          {store.tasks.map((task) => (
+            <div key={task.id} className={`task-item tile ${task.completed ? 'completed' : ''}`}>
+              <input
+                type="checkbox"
+                checked={task.completed}
+                onChange={() => store.toggleTask(task.id)}
+              />
+              <span>{task.title}</span>
+              <button className="remove-button" onClick={() => store.removeTask(task.id)}>
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-};
+});
 
 export default App;
